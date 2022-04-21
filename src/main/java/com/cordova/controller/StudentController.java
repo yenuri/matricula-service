@@ -3,6 +3,9 @@ package com.cordova.controller;
 import com.cordova.model.Student;
 import com.cordova.service.IStudentService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.Link;
+import org.springframework.hateoas.Links;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -10,6 +13,10 @@ import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import static org.springframework.hateoas.server.reactive.WebFluxLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.reactive.WebFluxLinkBuilder.methodOn;
+import static reactor.function.TupleUtils.function;
 
 import java.net.URI;
 
@@ -77,5 +84,20 @@ public class StudentController {
                             .thenReturn(new ResponseEntity<Void>(HttpStatus.NO_CONTENT));
                 })
                 .defaultIfEmpty(new ResponseEntity<Void>(HttpStatus.NOT_FOUND));
+    }
+
+    @GetMapping("/hateoas/{id}")
+    public Mono<EntityModel<Student>> findByIdHateoas(@PathVariable("id") String id) {
+        Mono<Link> link = linkTo(methodOn(StudentController.class).findById(id)).withSelfRel().toMono();
+        Mono<Link> link2 = linkTo(methodOn(StudentController.class).findById(id)).withSelfRel().toMono();
+
+        // 1 link
+        /*return service.findById(id)
+                .zipWith(link, (s, lk) -> EntityModel.of(s, lk));*/
+        // + de 1 link
+        return link
+                .zipWith(link2)
+                .map(function((lk, lk2) -> Links.of(lk, lk2)))
+                .zipWith(service.findById(id), (lks, s) -> EntityModel.of(s, lks));
     }
 }
