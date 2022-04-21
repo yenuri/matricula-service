@@ -3,9 +3,15 @@ package com.cordova.controller;
 import com.cordova.model.Student;
 import com.cordova.service.IStudentService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import java.net.URI;
 
 @RestController
 @RequestMapping("/students")
@@ -15,27 +21,61 @@ public class StudentController {
     private IStudentService service;
 
     @GetMapping
-    public Flux<Student> findAll(){
-        return service.findAll();
+    public Mono<ResponseEntity<Flux<Student>>> findAll() {
+        Flux<Student> fxStudent = service.findAll();
+        return Mono.just(ResponseEntity
+                .ok()
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(fxStudent));
     }
 
     @GetMapping("/{id}")
-    public Mono<Student> findById(@PathVariable("id") String id){
-        return service.findById(id);
+    public Mono<ResponseEntity<Student>> findById(@PathVariable("id") String id) {
+        return service.findById(id)
+                .map(p -> ResponseEntity
+                        .ok()
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body(p));
     }
 
     @PostMapping
-    public Mono<Student> register(@RequestBody Student student){
-        return service.register(student);
+    public Mono<ResponseEntity<Student>> register(@RequestBody Student student, final ServerHttpRequest request) {
+        return service.register(student)
+                .map(p -> ResponseEntity
+                        .created(URI.create(request.getURI().toString().concat("/").concat(p.getId())))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body(p));
     }
 
-    @PutMapping
-    public Mono<Student> modify(@RequestBody Student student){
-        return service.modify(student);
+    @PutMapping("/{id}")
+    public Mono<ResponseEntity<Student>> modify(@PathVariable("id") String id, @RequestBody Student student) {
+        Mono<Student> monoStudentBody = Mono.just(student);
+        Mono<Student> monoStudentBd = service.findById(id);
+        return monoStudentBd
+                .zipWith(monoStudentBody, (bd, st) -> {
+                    bd.setId(id);
+                    bd.setNames(st.getNames());
+                    bd.setLastNames(st.getLastNames());
+                    bd.setDni(st.getDni());
+                    bd.setAge(st.getAge());
+                    return bd;
+                })
+                .flatMap(service::modify)
+                .map(st -> ResponseEntity
+                        .ok()
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body(st))
+                .defaultIfEmpty(new ResponseEntity<Student>(HttpStatus.NOT_FOUND));
     }
 
     @DeleteMapping("/{id}")
-    public Mono<Void> remove(@PathVariable("id") String id){
-        return service.remove(id);
+    public Mono<ResponseEntity<Void>> remove(@PathVariable("id") String id) {
+
+        return service.findById(id)
+                .flatMap(p -> {
+                    return service.remove(p.getId())
+                            .thenReturn(new ResponseEntity<Void>(HttpStatus.NO_CONTENT));
+                })
+                .defaultIfEmpty(new ResponseEntity<Void>(HttpStatus.NOT_FOUND));
     }
 }
