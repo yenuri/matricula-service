@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import javax.validation.Valid;
+
 import static org.springframework.hateoas.server.reactive.WebFluxLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.reactive.WebFluxLinkBuilder.methodOn;
 import static reactor.function.TupleUtils.function;
@@ -46,7 +48,7 @@ public class StudentController {
     }
 
     @PostMapping
-    public Mono<ResponseEntity<Student>> register(@RequestBody Student student, final ServerHttpRequest request) {
+    public Mono<ResponseEntity<Student>> register(@Valid @RequestBody Student student, final ServerHttpRequest request) {
         return service.register(student)
                 .map(p -> ResponseEntity
                         .created(URI.create(request.getURI().toString().concat("/").concat(p.getId())))
@@ -55,7 +57,7 @@ public class StudentController {
     }
 
     @PutMapping("/{id}")
-    public Mono<ResponseEntity<Student>> modify(@PathVariable("id") String id, @RequestBody Student student) {
+    public Mono<ResponseEntity<Student>> modify(@Valid @RequestBody Student student,  @PathVariable("id") String id) {
         Mono<Student> monoStudentBody = Mono.just(student);
         Mono<Student> monoStudentBd = service.findById(id);
         return monoStudentBd
