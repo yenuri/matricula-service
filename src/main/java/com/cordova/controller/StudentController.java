@@ -1,8 +1,11 @@
 package com.cordova.controller;
 
 import com.cordova.model.Student;
+import com.cordova.pagination.PageSupport;
 import com.cordova.service.IStudentService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.Links;
@@ -101,5 +104,20 @@ public class StudentController {
                 .zipWith(link2)
                 .map(function((lk, lk2) -> Links.of(lk, lk2)))
                 .zipWith(service.findById(id), (lks, s) -> EntityModel.of(s, lks));
+    }
+
+    @GetMapping("/pageable")
+    public Mono<ResponseEntity<PageSupport<Student>>> listarPageable(
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "size", defaultValue = "5") int size
+    ){
+        Pageable pageRequest = PageRequest.of(page, size);
+
+        return service.listarPage(pageRequest)
+                .map(pag -> ResponseEntity
+                        .ok()
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body(pag))
+                .defaultIfEmpty(ResponseEntity.noContent().build());
     }
 }

@@ -1,8 +1,11 @@
 package com.cordova.service;
 
-import com.cordova.model.Course;
+import com.cordova.pagination.PageSupport;
+import org.springframework.data.domain.Pageable;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+
 
 public interface ICRUD<T, ID>{
     Mono<T> register(T t);
@@ -14,4 +17,6 @@ public interface ICRUD<T, ID>{
     Mono<T> findById(ID id);
 
     Mono<Void> remove(ID id);
+
+    Mono<PageSupport<T>> listarPage(Pageable pageable);
 }
