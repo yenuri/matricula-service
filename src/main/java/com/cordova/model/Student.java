@@ -22,11 +22,9 @@ public class Student {
     @Id
     private String id;
 
-    @NotNull
     @Size(min = 3)
     private String names;
 
-    @NotNull
     @Size(min = 3)
     private String lastNames;
 
@@ -34,6 +32,5 @@ public class Student {
     @Size(min = 8)
     private String dni;
 
-    @NotNull
-    private int age;
+    private Integer age;
 }

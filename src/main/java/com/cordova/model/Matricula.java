@@ -9,6 +9,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import javax.validation.constraints.NotNull;
+import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
 
@@ -27,5 +28,5 @@ public class Matricula {
 
     private List<Course> courseList;
 
-    private LocalTime matriculaDate;
+    private LocalDate matriculaDate;
 }
