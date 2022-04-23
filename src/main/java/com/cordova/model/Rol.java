@@ -8,32 +8,16 @@ import lombok.Setter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
-
 @Setter
 @Getter
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@Document(collection = "students")
-public class Student {
+@Document(collection = "roles")
+public class Rol {
 
     @Id
     private String id;
 
-    @NotNull
-    @Size(min = 3)
-    private String names;
-
-    @NotNull
-    @Size(min = 3)
-    private String lastNames;
-
-    @NotNull
-    @Size(min = 8)
-    private String dni;
-
-    @NotNull
-    private int age;
+    private String name;
 }

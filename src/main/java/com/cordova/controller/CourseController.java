@@ -1,8 +1,8 @@
 package com.cordova.controller;
 
-import com.cordova.model.Student;
+import com.cordova.model.Course;
 import com.cordova.pagination.PageSupport;
-import com.cordova.service.IStudentService;
+import com.cordova.service.ICourseService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -18,31 +18,30 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import javax.validation.Valid;
+import java.net.URI;
 
 import static org.springframework.hateoas.server.reactive.WebFluxLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.reactive.WebFluxLinkBuilder.methodOn;
 import static reactor.function.TupleUtils.function;
 
-import java.net.URI;
-
 @RestController
-@RequestMapping("/students")
-public class StudentController {
+@RequestMapping("/courses")
+public class CourseController {
 
     @Autowired
-    private IStudentService service;
+    private ICourseService service;
 
     @GetMapping
-    public Mono<ResponseEntity<Flux<Student>>> findAll() {
-        Flux<Student> fxStudent = service.findAll();
+    public Mono<ResponseEntity<Flux<Course>>> findAll() {
+        Flux<Course> fxCourse = service.findAll();
         return Mono.just(ResponseEntity
                 .ok()
                 .contentType(MediaType.APPLICATION_JSON)
-                .body(fxStudent));
+                .body(fxCourse));
     }
 
     @GetMapping("/{id}")
-    public Mono<ResponseEntity<Student>> findById(@PathVariable("id") String id) {
+    public Mono<ResponseEntity<Course>> findById(@PathVariable("id") String id) {
         return service.findById(id)
                 .map(p -> ResponseEntity
                         .ok()
@@ -51,8 +50,8 @@ public class StudentController {
     }
 
     @PostMapping
-    public Mono<ResponseEntity<Student>> register(@Valid @RequestBody Student student, final ServerHttpRequest request) {
-        return service.register(student)
+    public Mono<ResponseEntity<Course>> register(@Valid @RequestBody Course course, final ServerHttpRequest request) {
+        return service.register(course)
                 .map(p -> ResponseEntity
                         .created(URI.create(request.getURI().toString().concat("/").concat(p.getId())))
                         .contentType(MediaType.APPLICATION_JSON)
@@ -60,24 +59,23 @@ public class StudentController {
     }
 
     @PutMapping("/{id}")
-    public Mono<ResponseEntity<Student>> modify(@Valid @RequestBody Student student, @PathVariable("id") String id) {
-        Mono<Student> monoStudentBody = Mono.just(student);
-        Mono<Student> monoStudentBd = service.findById(id);
-        return monoStudentBd
-                .zipWith(monoStudentBody, (bd, st) -> {
+    public Mono<ResponseEntity<Course>> modify(@Valid @RequestBody Course course, @PathVariable("id") String id) {
+        Mono<Course> monoCourseBody = Mono.just(course);
+        Mono<Course> monoCourseBd = service.findById(id);
+        return monoCourseBd
+                .zipWith(monoCourseBody, (bd, cr) -> {
                     bd.setId(id);
-                    bd.setNames(st.getNames());
-                    bd.setLastNames(st.getLastNames());
-                    bd.setDni(st.getDni());
-                    bd.setAge(st.getAge());
+                    bd.setAcronym(cr.getAcronym());
+                    bd.setName(cr.getName());
+                    bd.setStatus(cr.getStatus());
                     return bd;
                 })
                 .flatMap(service::modify)
-                .map(st -> ResponseEntity
+                .map(cr -> ResponseEntity
                         .ok()
                         .contentType(MediaType.APPLICATION_JSON)
-                        .body(st))
-                .defaultIfEmpty(new ResponseEntity<Student>(HttpStatus.NOT_FOUND));
+                        .body(cr))
+                .defaultIfEmpty(new ResponseEntity<Course>(HttpStatus.NOT_FOUND));
     }
 
     @DeleteMapping("/{id}")
@@ -92,14 +90,10 @@ public class StudentController {
     }
 
     @GetMapping("/hateoas/{id}")
-    public Mono<EntityModel<Student>> findByIdHateoas(@PathVariable("id") String id) {
-        Mono<Link> link = linkTo(methodOn(StudentController.class).findById(id)).withSelfRel().toMono();
-        Mono<Link> link2 = linkTo(methodOn(StudentController.class).findById(id)).withSelfRel().toMono();
+    public Mono<EntityModel<Course>> findByIdHateoas(@PathVariable("id") String id) {
+        Mono<Link> link = linkTo(methodOn(CourseController.class).findById(id)).withSelfRel().toMono();
+        Mono<Link> link2 = linkTo(methodOn(CourseController.class).findById(id)).withSelfRel().toMono();
 
-        // 1 link
-        /*return service.findById(id)
-                .zipWith(link, (s, lk) -> EntityModel.of(s, lk));*/
-        // + de 1 link
         return link
                 .zipWith(link2)
                 .map(function((lk, lk2) -> Links.of(lk, lk2)))
@@ -107,7 +101,7 @@ public class StudentController {
     }
 
     @GetMapping("/pageable")
-    public Mono<ResponseEntity<PageSupport<Student>>> listarPageable(
+    public Mono<ResponseEntity<PageSupport<Course>>> listarPageable(
             @RequestParam(name = "page", defaultValue = "0") int page,
             @RequestParam(name = "size", defaultValue = "5") int size
     ) {
