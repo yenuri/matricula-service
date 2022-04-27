@@ -2,6 +2,8 @@ package com.cordova.handler;
 
 import com.cordova.model.Student;
 import com.cordova.service.IStudentService;
+import com.cordova.validators.RequestValidator;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.server.ServerRequest;
@@ -15,7 +17,11 @@ import static org.springframework.web.reactive.function.BodyInserters.fromValue;
 @Component
 public class StudentHandler {
 
+    @Autowired
     private IStudentService service;
+
+    @Autowired
+    private RequestValidator validatorGeneral;
 
     public Mono<ServerResponse> listar(ServerRequest req) {
         return ServerResponse
@@ -39,6 +45,7 @@ public class StudentHandler {
         Mono<Student> monoStudent = req.bodyToMono(Student.class);
 
         return monoStudent
+                .flatMap(validatorGeneral::validate)
                 .flatMap(service::register)
                 .flatMap(s -> ServerResponse.created(URI.create(req.uri().toString().concat(s.getId())))
                         .contentType(MediaType.APPLICATION_JSON)
@@ -58,6 +65,7 @@ public class StudentHandler {
                     bd.setAge(ms.getAge());
                     return bd;
                 })
+                .flatMap(validatorGeneral::validate)
                 .flatMap(service::modify)
                 .flatMap(s -> ServerResponse
                         .ok()

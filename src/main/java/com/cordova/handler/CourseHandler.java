@@ -2,6 +2,7 @@ package com.cordova.handler;
 
 import com.cordova.model.Course;
 import com.cordova.service.ICourseService;
+import com.cordova.validators.RequestValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
@@ -18,6 +19,9 @@ public class CourseHandler {
 
     @Autowired
     private ICourseService service;
+
+    @Autowired
+    private RequestValidator validatorGeneral;
 
     public Mono<ServerResponse> listar(ServerRequest req) {
         return ServerResponse
@@ -41,6 +45,7 @@ public class CourseHandler {
         Mono<Course> monoCourse = req.bodyToMono(Course.class);
 
         return monoCourse
+                .flatMap(validatorGeneral::validate)
                 .flatMap(service::register)
                 .flatMap(c -> ServerResponse.created(URI.create(req.uri().toString().concat(c.getId())))
                         .contentType(MediaType.APPLICATION_JSON)
@@ -59,6 +64,7 @@ public class CourseHandler {
                     bd.setStatus(mc.getStatus());
                     return bd;
                 })
+                .flatMap(validatorGeneral::validate)
                 .flatMap(service::modify)
                 .flatMap(c -> ServerResponse
                         .ok()

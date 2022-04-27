@@ -2,6 +2,7 @@ package com.cordova.handler;
 
 import com.cordova.model.Matricula;
 import com.cordova.service.IMatriculaService;
+import com.cordova.validators.RequestValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
@@ -18,6 +19,9 @@ public class MatriculaHandler {
 
     @Autowired
     private IMatriculaService service;
+
+    @Autowired
+    private RequestValidator validatorGeneral;
 
     public Mono<ServerResponse> listar(ServerRequest req) {
         return ServerResponse
@@ -41,6 +45,7 @@ public class MatriculaHandler {
         Mono<Matricula> monoMatricula = req.bodyToMono(Matricula.class);
 
         return monoMatricula
+                .flatMap(validatorGeneral::validate)
                 .flatMap(service::register)
                 .flatMap(s -> ServerResponse.created(URI.create(req.uri().toString().concat(s.getId())))
                         .contentType(MediaType.APPLICATION_JSON)
@@ -59,6 +64,7 @@ public class MatriculaHandler {
                     bd.setMatriculaDate(mm.getMatriculaDate());
                     return bd;
                 })
+                .flatMap(validatorGeneral::validate)
                 .flatMap(service::modify)
                 .flatMap(s -> ServerResponse
                         .ok()
