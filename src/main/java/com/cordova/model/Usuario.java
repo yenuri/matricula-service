@@ -15,17 +15,17 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@Document(collection = "users")
-public class User {
+@Document(collection = "usuarios")
+public class Usuario {
 
     @Id
     private String id;
 
-    private String user;
+    private String usuario;
 
-    private String password;
+    private String clave;
 
-    private Boolean status;
+    private Boolean estado;
 
     private List<Rol> roles;
 }
