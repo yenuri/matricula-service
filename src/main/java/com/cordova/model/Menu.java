@@ -18,9 +18,9 @@ public class Menu {
     @Id
     private String id;
 
-    private String icon;
+    private String icono;
 
-    private String name;
+    private String nombre;
 
     private String url;
 

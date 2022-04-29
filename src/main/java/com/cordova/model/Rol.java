@@ -19,5 +19,5 @@ public class Rol {
     @Id
     private String id;
 
-    private String name;
+    private String nombre;
 }

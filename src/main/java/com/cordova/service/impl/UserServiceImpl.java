@@ -43,7 +43,7 @@ public class UserServiceImpl extends CRUDImpl<Usuario, String> implements IUserS
                             .flatMap(rol -> {
                                 return rolRepo.findById(rol.getId())
                                         .map(r -> {
-                                            roles.add(r.getName());
+                                            roles.add(r.getNombre());
                                             return r;
                                         });
                             }).collectList().flatMap(list -> {

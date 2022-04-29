@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.security.reactive.ReactiveSecurityAutoConfiguration;
 import org.springframework.boot.autoconfigure.web.WebProperties.Resources;
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -27,7 +28,7 @@ import java.util.List;
 import static org.mockito.ArgumentMatchers.any;
 
 @ExtendWith(SpringExtension.class)
-@WebFluxTest(controllers = MatriculaController.class)
+@WebFluxTest(controllers = MatriculaController.class, excludeAutoConfiguration = {ReactiveSecurityAutoConfiguration.class})
 @Import(MatriculaServiceImpl.class)
 class MatriculaControllerTest {
 

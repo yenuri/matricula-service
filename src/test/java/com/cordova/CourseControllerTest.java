@@ -6,6 +6,7 @@ import com.cordova.repo.ICourseRepo;
 import com.cordova.service.impl.CourseServiceImpl;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.security.reactive.ReactiveSecurityAutoConfiguration;
 import org.springframework.boot.autoconfigure.web.WebProperties.Resources;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -13,6 +14,7 @@ import org.springframework.boot.autoconfigure.web.WebProperties;
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.reactive.server.WebTestClient;
@@ -25,7 +27,7 @@ import java.util.List;
 import static org.mockito.ArgumentMatchers.any;
 
 @ExtendWith(SpringExtension.class)
-@WebFluxTest(controllers = CourseController.class)
+@WebFluxTest(controllers = CourseController.class, excludeAutoConfiguration = {ReactiveSecurityAutoConfiguration.class})
 @Import(CourseServiceImpl.class)
 class CourseControllerTest {
 
